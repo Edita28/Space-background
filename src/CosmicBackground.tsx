@@ -111,8 +111,7 @@ const CosmicBackground: React.FC = () => {
         twinkleSpeed = 0.05;
       } else if (starType < 0.3) {
         // Средние звезды (20%)
-        radius = Math.random() * 1.5 + 1;
-        brightness = Math.random() * 0.4 + 0.5;
+        radius = Math.random() * 0.4 + 0.5;
         twinkleSpeed = 0.03;
       } else {
         // Мелкие звезды (70%)
@@ -127,9 +126,9 @@ const CosmicBackground: React.FC = () => {
         radius,
         vx: (Math.random() - 0.5) * 0.2,
         vy: (Math.random() - 0.5) * 0.2,
-        brightness,
+        brightness: brightness ?? 1,
         twinkle: Math.random() * Math.PI * 2,
-        twinkleSpeed,
+        twinkleSpeed: twinkleSpeed ?? 0.02,
       });
     }
 
