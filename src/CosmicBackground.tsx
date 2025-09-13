@@ -291,7 +291,7 @@ const CosmicBackground: React.FC = () => {
         const beamLength = 100; // Увеличиваем длину луча
         const beamWidth = 4; // Увеличиваем ширину луча
         const lifeRatio = comet.life / comet.maxLife;
-        const alpha = 1 - lifeRatio;
+        // const alpha = 1 - lifeRatio; // removed unused variable
         
         ctx.save();
         ctx.translate(comet.x, comet.y);
