@@ -290,7 +290,6 @@ const CosmicBackground: React.FC = () => {
         const angle = Math.atan2(comet.vy, comet.vx);
         const beamLength = 100; // Увеличиваем длину луча
         const beamWidth = 4; // Увеличиваем ширину луча
-        const lifeRatio = comet.life / comet.maxLife;
         // const alpha = 1 - lifeRatio; // removed unused variable
         
         ctx.save();
