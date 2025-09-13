@@ -79,16 +79,61 @@ const CosmicBackground: React.FC = () => {
       color: string;
     }
 
+    interface MovingNebula {
+      x: number;
+      y: number;
+      radius: number;
+      color: string;
+      opacity: number;
+      vx: number;
+      vy: number;
+      pulse: number;
+      pulseSpeed: number;
+    }
+
+    interface Planet {
+      x: number;
+      y: number;
+      radius: number;
+      color: string;
+      orbitRadius: number;
+      orbitSpeed: number;
+      angle: number;
+      centerX: number;
+      centerY: number;
+      rotation: number;
+      rotationSpeed: number;
+    }
+
+    interface Asteroid {
+      x: number;
+      y: number;
+      radius: number;
+      vx: number;
+      vy: number;
+      rotation: number;
+      rotationSpeed: number;
+      color: string;
+      wobble: number;
+      wobbleSpeed: number;
+    }
+
 
 
     const stars: Star[] = [];
     const comets: Comet[] = [];
     const particles: Particle[] = [];
+    const movingNebulae: MovingNebula[] = [];
+    const planets: Planet[] = [];
+    const asteroids: Asteroid[] = [];
     
     // Адаптивное количество элементов в зависимости от размера экрана
     const isMobile = window.innerWidth <= 768;
     const isSmallScreen = window.innerWidth <= 480;
     const numStars = isSmallScreen ? 150 : isMobile ? 200 : 300;
+    const numNebulae = isSmallScreen ? 2 : isMobile ? 3 : 4;
+    const numPlanets = isSmallScreen ? 1 : isMobile ? 2 : 3;
+    const numAsteroids = isSmallScreen ? 8 : isMobile ? 12 : 18;
 
     // Переменные для интерактивности
     let mouseX = width / 2;
@@ -98,6 +143,10 @@ const CosmicBackground: React.FC = () => {
     let lastTime = 0;
     const targetFPS = isSmallScreen ? 30 : isMobile ? 45 : 60; // Адаптивный FPS
     const frameInterval = 1000 / targetFPS;
+    
+    // Переменные для пульсирующих эффектов
+    let globalPulse = 0;
+    let backgroundPulse = 0;
 
     // Создание звезд с разными размерами и яркостью
     for (let i = 0; i < numStars; i++) {
@@ -211,6 +260,59 @@ const CosmicBackground: React.FC = () => {
       });
     };
 
+    // Создание движущихся туманностей
+    for (let i = 0; i < numNebulae; i++) {
+      movingNebulae.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        radius: Math.random() * 200 + 150,
+        color: `hsl(${Math.random() * 60 + 200}, 70%, 50%)`,
+        opacity: Math.random() * 0.4 + 0.1,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
+        pulse: Math.random() * Math.PI * 2,
+        pulseSpeed: Math.random() * 0.02 + 0.01,
+      });
+    }
+
+    // Создание планет
+    for (let i = 0; i < numPlanets; i++) {
+      const centerX = Math.random() * width;
+      const centerY = Math.random() * height;
+      const orbitRadius = Math.random() * 120 + 100;
+      const planetColors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57', '#ff9ff3'];
+      
+      planets.push({
+        x: centerX + orbitRadius,
+        y: centerY,
+        radius: Math.random() * 12 + 8,
+        color: planetColors[Math.floor(Math.random() * planetColors.length)],
+        orbitRadius,
+        orbitSpeed: (Math.random() - 0.5) * 0.03,
+        angle: Math.random() * Math.PI * 2,
+        centerX,
+        centerY,
+        rotation: Math.random() * Math.PI * 2,
+        rotationSpeed: (Math.random() - 0.5) * 0.05,
+      });
+    }
+
+    // Создание астероидов
+    for (let i = 0; i < numAsteroids; i++) {
+      asteroids.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        radius: Math.random() * 4 + 2,
+        vx: (Math.random() - 0.5) * 1.2,
+        vy: (Math.random() - 0.5) * 1.2,
+        rotation: Math.random() * Math.PI * 2,
+        rotationSpeed: (Math.random() - 0.5) * 0.15,
+        color: `hsl(${Math.random() * 30 + 20}, 30%, ${Math.random() * 30 + 40}%)`,
+        wobble: Math.random() * Math.PI * 2,
+        wobbleSpeed: Math.random() * 0.1 + 0.05,
+      });
+    }
+
     // Функция создания частиц от комет
     const createParticles = (comet: Comet) => {
       const numParticles = Math.floor(comet.radius * 2);
@@ -239,12 +341,13 @@ const CosmicBackground: React.FC = () => {
       // Очищаем canvas
       ctx.clearRect(0, 0, width, height);
       
-      // Рисуем градиентный космический фон
+      // Рисуем пульсирующий градиентный космический фон
+      const pulseIntensity = 0.1 + 0.05 * Math.sin(backgroundPulse);
       const gradient = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, Math.max(width, height)/2);
-      gradient.addColorStop(0, '#0a0a2e');
-      gradient.addColorStop(0.3, '#16213e');
-      gradient.addColorStop(0.7, '#0f0f23');
-      gradient.addColorStop(1, '#000011');
+      gradient.addColorStop(0, `hsl(240, 60%, ${15 + pulseIntensity * 10}%)`);
+      gradient.addColorStop(0.3, `hsl(240, 50%, ${20 + pulseIntensity * 8}%)`);
+      gradient.addColorStop(0.7, `hsl(240, 40%, ${12 + pulseIntensity * 6}%)`);
+      gradient.addColorStop(1, `hsl(240, 30%, ${8 + pulseIntensity * 4}%)`);
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, width, height);
 
@@ -281,6 +384,94 @@ const CosmicBackground: React.FC = () => {
           ctx.arc(star.x, star.y, star.radius * 8, 0, 2 * Math.PI);
           ctx.fill();
         }
+      }
+
+      // Рисуем движущиеся туманности
+      for (const nebula of movingNebulae) {
+        const pulseOpacity = nebula.opacity * (0.7 + 0.3 * Math.sin(nebula.pulse));
+        const gradient = ctx.createRadialGradient(nebula.x, nebula.y, 0, nebula.x, nebula.y, nebula.radius);
+        gradient.addColorStop(0, nebula.color + Math.floor(pulseOpacity * 255).toString(16).padStart(2, '0'));
+        gradient.addColorStop(0.5, nebula.color + Math.floor(pulseOpacity * 128).toString(16).padStart(2, '0'));
+        gradient.addColorStop(1, nebula.color + '00');
+        
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(nebula.x, nebula.y, nebula.radius, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+
+      // Рисуем планеты
+      for (const planet of planets) {
+        // Рисуем орбиту (тонкую линию)
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(planet.centerX, planet.centerY, planet.orbitRadius, 0, 2 * Math.PI);
+        ctx.stroke();
+        
+        // Рисуем планету с градиентом
+        const planetGradient = ctx.createRadialGradient(
+          planet.x - planet.radius * 0.3, 
+          planet.y - planet.radius * 0.3, 
+          0,
+          planet.x, 
+          planet.y, 
+          planet.radius
+        );
+        planetGradient.addColorStop(0, planet.color);
+        planetGradient.addColorStop(0.7, planet.color + 'cc');
+        planetGradient.addColorStop(1, planet.color + '80');
+        
+        ctx.fillStyle = planetGradient;
+        ctx.beginPath();
+        ctx.arc(planet.x, planet.y, planet.radius, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // Добавляем блик на планете
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.beginPath();
+        ctx.arc(planet.x - planet.radius * 0.3, planet.y - planet.radius * 0.3, planet.radius * 0.4, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // Добавляем кольца для некоторых планет
+        if (Math.random() > 0.7) {
+          ctx.strokeStyle = planet.color + '60';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(planet.x, planet.y, planet.radius * 1.5, 0, 2 * Math.PI);
+          ctx.stroke();
+        }
+      }
+
+      // Рисуем астероиды
+      for (const asteroid of asteroids) {
+        ctx.save();
+        ctx.translate(asteroid.x, asteroid.y);
+        ctx.rotate(asteroid.rotation);
+        
+        // Добавляем покачивание
+        const wobbleOffset = Math.sin(asteroid.wobble) * 2;
+        ctx.translate(0, wobbleOffset);
+        
+        // Рисуем неправильную форму астероида
+        ctx.fillStyle = asteroid.color;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, asteroid.radius, asteroid.radius * 0.7, 0, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // Добавляем детали на астероид
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+        ctx.beginPath();
+        ctx.ellipse(-asteroid.radius * 0.3, -asteroid.radius * 0.2, asteroid.radius * 0.2, asteroid.radius * 0.1, 0, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // Добавляем блик
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+        ctx.beginPath();
+        ctx.ellipse(asteroid.radius * 0.2, -asteroid.radius * 0.3, asteroid.radius * 0.15, asteroid.radius * 0.1, 0, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        ctx.restore();
       }
 
       // Рисуем кометы с улучшенными эффектами
@@ -448,6 +639,10 @@ const CosmicBackground: React.FC = () => {
     };
 
     const update = () => {
+      // Обновляем глобальные пульсирующие эффекты
+      globalPulse += 0.02;
+      backgroundPulse += 0.015;
+      
       // Обновляем звезды
       for (const star of stars) {
         // Эффект притяжения к курсору мыши (адаптивный для мобильных)
@@ -463,8 +658,12 @@ const CosmicBackground: React.FC = () => {
           star.vy += (dy / distance) * force;
         }
         
+        // Добавляем случайные колебания для более живого движения
+        star.vx += (Math.random() - 0.5) * 0.01;
+        star.vy += (Math.random() - 0.5) * 0.01;
+        
         // Ограничиваем скорость
-        const maxSpeed = 1.5;
+        const maxSpeed = 2.0; // Увеличиваем максимальную скорость
         const speed = Math.sqrt(star.vx * star.vx + star.vy * star.vy);
         if (speed > maxSpeed) {
           star.vx = (star.vx / speed) * maxSpeed;
@@ -546,6 +745,37 @@ const CosmicBackground: React.FC = () => {
             particle.y > height + 50) {
           particles.splice(i, 1);
         }
+      }
+
+      // Обновляем движущиеся туманности
+      for (const nebula of movingNebulae) {
+        nebula.x += nebula.vx;
+        nebula.y += nebula.vy;
+        nebula.pulse += nebula.pulseSpeed;
+
+        // Отражаем от границ
+        if (nebula.x < -nebula.radius || nebula.x > width + nebula.radius) nebula.vx = -nebula.vx;
+        if (nebula.y < -nebula.radius || nebula.y > height + nebula.radius) nebula.vy = -nebula.vy;
+      }
+
+      // Обновляем планеты
+      for (const planet of planets) {
+        planet.angle += planet.orbitSpeed;
+        planet.rotation += planet.rotationSpeed;
+        planet.x = planet.centerX + Math.cos(planet.angle) * planet.orbitRadius;
+        planet.y = planet.centerY + Math.sin(planet.angle) * planet.orbitRadius;
+      }
+
+      // Обновляем астероиды
+      for (const asteroid of asteroids) {
+        asteroid.x += asteroid.vx;
+        asteroid.y += asteroid.vy;
+        asteroid.rotation += asteroid.rotationSpeed;
+        asteroid.wobble += asteroid.wobbleSpeed;
+
+        // Отражаем от границ
+        if (asteroid.x < 0 || asteroid.x > width) asteroid.vx = -asteroid.vx;
+        if (asteroid.y < 0 || asteroid.y > height) asteroid.vy = -asteroid.vy;
       }
     };
 
