@@ -9,6 +9,8 @@ interface Star {
   twinkleSpeed: number;
   twinklePhase: number;
   color: string;
+  layer: number;
+  parallax: number;
 }
 
 interface Comet {
@@ -307,9 +309,59 @@ const CosmicBackground: React.FC = () => {
           ctx.restore();
         }
 
-        // Draw bright comet core with glow
+        // Draw bright comet core with long light beam
         ctx.save();
         
+        // Calculate beam direction (opposite to velocity)
+        const beamLength = Math.min(comet.radius * 15, 80);
+        const beamWidth = comet.radius * 0.8;
+        const angle = Math.atan2(comet.vy, comet.vx);
+        
+        // Draw long light beam
+        const beamGradient = ctx.createLinearGradient(
+          comet.x - Math.cos(angle) * beamLength,
+          comet.y - Math.sin(angle) * beamLength,
+          comet.x,
+          comet.y
+        );
+        beamGradient.addColorStop(0, 'rgba(220, 240, 255, 0)');
+        beamGradient.addColorStop(0.3, 'rgba(220, 240, 255, 0.3)');
+        beamGradient.addColorStop(0.7, 'rgba(220, 240, 255, 0.7)');
+        beamGradient.addColorStop(1, 'rgba(255, 255, 255, 0.9)');
+        
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.strokeStyle = beamGradient;
+        ctx.lineWidth = beamWidth;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(comet.x - Math.cos(angle) * beamLength, comet.y - Math.sin(angle) * beamLength);
+        ctx.lineTo(comet.x, comet.y);
+        ctx.stroke();
+        ctx.restore();
+
+        // Draw outer glow around beam
+        const outerBeamGlow = ctx.createLinearGradient(
+          comet.x - Math.cos(angle) * beamLength * 1.2,
+          comet.y - Math.sin(angle) * beamLength * 1.2,
+          comet.x,
+          comet.y
+        );
+        outerBeamGlow.addColorStop(0, 'rgba(220, 240, 255, 0)');
+        outerBeamGlow.addColorStop(0.5, 'rgba(220, 240, 255, 0.1)');
+        outerBeamGlow.addColorStop(1, 'rgba(220, 240, 255, 0.3)');
+        
+        ctx.save();
+        ctx.globalAlpha = alpha * 0.6;
+        ctx.strokeStyle = outerBeamGlow;
+        ctx.lineWidth = beamWidth * 2.5;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(comet.x - Math.cos(angle) * beamLength, comet.y - Math.sin(angle) * beamLength);
+        ctx.lineTo(comet.x, comet.y);
+        ctx.stroke();
+        ctx.restore();
+
         // Outer glow
         const outerGlow = ctx.createRadialGradient(
           comet.x, comet.y, 0,
